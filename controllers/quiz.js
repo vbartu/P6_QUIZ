@@ -9,7 +9,8 @@ exports.load = (req, res, next, quizId) => {
 
     models.quiz.findById(quizId, {
         include: [
-            models.tip,
+            {model: models.tip, include: [
+                {model: models.user, as: 'author'}]},
             {model: models.user, as: 'author'}
         ]
     })
@@ -88,7 +89,7 @@ exports.index = (req, res, next) => {
     })
     .then(quizzes => {
         res.render('quizzes/index.ejs', {
-            quizzes, 
+            quizzes,
             search,
             title
         });
@@ -110,7 +111,7 @@ exports.show = (req, res, next) => {
 exports.new = (req, res, next) => {
 
     const quiz = {
-        question: "", 
+        question: "",
         answer: ""
     };
 
