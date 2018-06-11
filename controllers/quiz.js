@@ -226,3 +226,54 @@ exports.check = (req, res, next) => {
         answer
     });
 };
+
+// P6 randomplay
+exports.randomplay = (req, res, next) => {
+  req.session.randomPlay = req.session.randomPlay || [];
+  let score = req.session.randomPlay.length;
+
+  const whereOpt = {'id':{[Sequelize.Op.notIn]: req.session.randomPlay}};
+
+  models.quiz.count({where: whereOpt}).then(count => {
+    
+    if (!count) {
+      req.session.randomPlay = [];
+      res.render('quizzes/random_nomore', {score});
+    }
+
+    return models.quiz.findAll({
+      where: whereOpt,
+      offset: Math.floor(Math.random() * count),
+      limit: 1
+    }).then(quizzes => {
+      res.render('quizzes/random_play', {
+        quiz: quizzes[0],
+        score: score
+      });
+    });
+
+  }).catch(err => next(err));
+
+};
+
+exports.randomcheck = (req, res, next) => {
+  const {quiz, query} = req;
+  const result = quiz.answer.trim().toLowerCase() === query.answer.trim().toLowerCase();
+  let score = req.session.randomPlay.length;
+
+  if(result){
+        if(req.session.randomPlay.indexOf(req.quiz.id)=== -1){
+            req.session.randomPlay = req.session.randomPlay.concat(quiz.id);
+            score++;
+        }
+    }
+  else {
+    req.session.randomPlay = [];
+  }
+
+  res.render('quizzes/random_result', {
+    answer: query.answer,
+    result: result,
+    score: score
+  });
+}
