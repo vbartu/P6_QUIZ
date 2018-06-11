@@ -157,13 +157,12 @@ exports.check = (req, res, next) => {
 // P6 randomplay
 exports.randomplay = (req, res, next) => {
   req.session.randomPlay = req.session.randomPlay || [];
+  let score = req.session.randomPlay.length;
 
   const whereOpt = {'id':{[Sequelize.Op.notIn]: req.session.randomPlay}};
 
   models.quiz.count({where: whereOpt}).then(count => {
-
-    let score = req.session.randomPlay.length;
-
+    
     if (!count) {
       req.session.randomPlay = [];
       res.render('quizzes/random_nomore', {score});
